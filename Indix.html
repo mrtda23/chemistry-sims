@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المختبر التفاعلي: الروابط التساهمية وتداخل الأفلاك</title>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            margin: 0; padding: 15px;
+            background-color: var(--bg-dark); color: var(--text-main);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        h1 { margin: 5px 0 12px; font-size: 1.65rem; color: var(--accent); text-align: center; }
+        .container {
+            width: 100%; max-width: 1020px;
+            background: var(--card-bg); border-radius: 16px;
+            padding: 18px; box-shadow: 0 10px 35px rgba(0,0,0,0.6);
+        }
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 12px; margin-bottom: 15px; flex-wrap: wrap;
+        }
+        .tabs {
+            display: flex; gap: 8px; flex-wrap: wrap; flex: 1;
+        }
+        .tab-btn {
+            flex: 1; min-width: 135px; padding: 10px 12px;
+            background: #334155; color: var(--text-main);
+            border: 2px solid transparent; border-radius: 10px;
+            font-size: 0.95rem; font-weight: bold; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: #0284c7; border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+        }
+        .tab-btn:hover:not(.active) { background: #475569; }
+
+        .mode-toggle {
+            display: flex; background: #0f172a; padding: 5px;
+            border-radius: 10px; border: 1px solid #334155;
+        }
+        .mode-btn {
+            padding: 8px 14px; border: none; background: transparent;
+            color: var(--text-muted); font-weight: bold; font-size: 0.9rem;
+            border-radius: 7px; cursor: pointer; transition: 0.2s;
+        }
+        .mode-btn.active {
+            background: #6366f1; color: #fff;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
+        .canvas-wrapper {
+            position: relative; width: 100%; height: 420px;
+            background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+            border-radius: 12px; border: 1px solid #334155; overflow: hidden;
+            margin-bottom: 15px;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+
+        .status-badge {
+            position: absolute; top: 12px; right: 12px;
+            padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.88rem;
+            background: rgba(15, 23, 42, 0.88); border: 1px solid #475569; z-index: 2;
+        }
+        .lewis-badge {
+            position: absolute; top: 12px; left: 12px;
+            padding: 6px 15px; border-radius: 10px; font-weight: bold; font-size: 1.2rem;
+            background: rgba(15, 23, 42, 0.88); color: var(--accent); border: 1px solid #475569;
+            letter-spacing: 1.5px; direction: ltr; z-index: 2;
+        }
+        .orbital-legend {
+            position: absolute; bottom: 12px; right: 12px;
+            display: none; gap: 14px; background: rgba(15, 23, 42, 0.9);
+            padding: 8px 15px; border-radius: 8px; border: 1px solid #334155; font-size: 0.85rem;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+        .controls {
+            display: flex; align-items: center; gap: 15px;
+            background: #0f172a; padding: 12px 18px; border-radius: 12px;
+            margin-bottom: 15px; flex-wrap: wrap;
+        }
+        .slider-group { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 250px; }
+        input[type="range"] { flex: 1; accent-color: var(--accent); height: 8px; cursor: pointer; }
+        .action-btn {
+            padding: 9px 18px; background: #10b981; color: white;
+            border: none; border-radius: 8px; font-weight: bold;
+            font-size: 0.95rem; cursor: pointer; transition: 0.2s;
+        }
+        .action-btn:hover { opacity: 0.9; }
+
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 10px;
+        }
+        .info-card {
+            background: #0f172a; padding: 12px; border-radius: 10px;
+            border-right: 4px solid var(--accent); text-align: center;
+        }
+        .info-card .label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+        .info-card .value { font-size: 1.05rem; font-weight: bold; color: #fff; }
+
+        footer {
+            margin-top: 18px; padding: 10px 24px;
+            background: rgba(30, 41, 59, 0.75); border-radius: 30px;
+            border: 1px solid #334155; color: #cbd5e1;
+            font-size: 0.95rem; text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        footer strong { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <h1>المختبر التفاعلي: الروابط التساهمية وتداخل الأفلاك (σ و π)</h1>
+
+    <div class="container">
+        <div class="top-bar">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="selectMolecule('F2', this)">الفلور F₂ (أحادية)</button>
+                <button class="tab-btn" onclick="selectMolecule('O2', this)">الأكسجين O₂ (ثنائية)</button>
+                <button class="tab-btn" onclick="selectMolecule('N2', this)">النيتروجين N₂ (ثلاثية)</button>
+                <button class="tab-btn" onclick="selectMolecule('H2O', this)">الماء H₂O (قطبية)</button>
+                <button class="tab-btn" onclick="selectMolecule('CO2', this)">ثاني أكسيد الكربون CO₂</button>
+            </div>
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="modeBohr" onclick="setViewMode('bohr')">مدارات التكافؤ (لويس)</button>
+                <button class="mode-btn" id="modeOrbital" onclick="setViewMode('orbital')">تداخل الأفلاك (σ و π)</button>
+            </div>
+        </div>
+
+        <div class="canvas-wrapper">
+            <div id="statusBadge" class="status-badge">ذرات منفصلة</div>
+            <div id="lewisBadge" class="lewis-badge">:F· + ·F:</div>
+            <div id="orbitalLegend" class="orbital-legend">
+                <div class="legend-item"><span class="dot" style="background:#10b981"></span> تداخل رأسي: رابطة سيجما (σ)</div>
+                <div class="legend-item"><span class="dot" style="background:#ec4899"></span> تداخل جانبي علوي/سفلي: رابطة باي الأولى (π₁)</div>
+                <div class="legend-item"><span class="dot" style="background:#a855f7"></span> تداخل جانبي أمامي/خلفي: رابطة باي الثانية (π₂)</div>
+            </div>
+            <canvas id="simCanvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <span>ذرات منفصلة</span>
+                <input type="range" id="bondSlider" min="0" max="100" value="0" oninput="updateProgress(this.value)">
+                <span>تكوين الجزيء</span>
+            </div>
+            <button class="action-btn" id="autoBtn" onclick="toggleAutoBond()">دمج الذرات تلقائياً</button>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="label">نوع الروابط وعددها</div>
+                <div class="value" id="infoType">-</div>
+            </div>
+            <div class="info-card">
+                <div class="label">الأزواج الرابطة / غير الرابطة</div>
+                <div class="value" id="infoPairs">-</div>
+            </div>
+            <div class="info-card">
+                <div class="label">طول الرابطة والشكل الهندسي</div>
+                <div class="value" id="infoLength">-</div>
+            </div>
+            <div class="info-card">
+                <div class="label">طاقة تفكك الرابطة</div>
+                <div class="value" id="infoEnergy">-</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        إعداد وتصميم: <strong>أ. رمزي المعتوق</strong> — قسم الكيمياء (مدرسة زيد بن ثابت الثانوية)
+    </footer>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('bondSlider');
+
+    const molecules = {
+        F2: {
+            kind: 'diatomic', symbol: 'F', name: 'الفلور', color: '#10b981',
+            sharedPairs: 1, lonePairsPerAtom: 3, targetDist: 150,
+            bondType: 'تساهمية أحادية (1 سيجما σ)',
+            pairsText: 'زوج مشترك | 6 أزواج حرة',
+            bondLength: '143 pm | خطي',
+            bondEnergy: '159 kJ/mol (ضعيفة)',
+            lewisSeparated: ':F· + ·F:', lewisBonded: ':F — F:'
+        },
+        O2: {
+            kind: 'diatomic', symbol: 'O', name: 'الأكسجين', color: '#38bdf8',
+            sharedPairs: 2, lonePairsPerAtom: 2, targetDist: 130,
+            bondType: 'تساهمية ثنائية (1σ + 1π)',
+            pairsText: 'زوجان مشتركان | 4 أزواج حرة',
+            bondLength: '121 pm | خطي',
+            bondEnergy: '498 kJ/mol (متوسطة)',
+            lewisSeparated: ':O: + :O:', lewisBonded: ':O = O:'
+        },
+        N2: {
+            kind: 'diatomic', symbol: 'N', name: 'النيتروجين', color: '#a855f7',
+            sharedPairs: 3, lonePairsPerAtom: 1, targetDist: 112,
+            bondType: 'تساهمية ثلاثية (1σ + 2π)',
+            pairsText: '3 أزواج مشتركة | زوجان حران',
+            bondLength: '110 pm | خطي',
+            bondEnergy: '945 kJ/mol (قوية جداً)',
+            lewisSeparated: ':N⋮ + ⋮N:', lewisBonded: ':N ≡ N:'
+        },
+        H2O: {
+            kind: 'triatomic_bent', name: 'الماء',
+            bondType: 'رابطتان أحاديتان قطبيتان (2σ)',
+            pairsText: 'زوجان مشتركان | زوجان حران على O',
+            bondLength: '96 pm | منحني (زاوية 104.5°)',
+            bondEnergy: '463 kJ/mol لكل رابطة O-H',
+            lewisSeparated: 'H· + ·O· + ·H', lewisBonded: 'H — O — H'
+        },
+        CO2: {
+            kind: 'triatomic_linear', name: 'ثاني أكسيد الكربون',
+            bondType: 'رابطتان ثنائيتان (2σ + 2π)',
+            pairsText: '4 أزواج مشتركة | 4 أزواج حرة على O',
+            bondLength: '116 pm | خطي (زاوية 180°)',
+            bondEnergy: '799 kJ/mol لكل رابطة C=O',
+            lewisSeparated: ':O: + ·C· + :O:', lewisBonded: ':O = C = O:'
+        }
+    };
+
+    let currentKey = 'F2';
+    let viewMode = 'bohr';
+    let progress = 0;
+    let angleOffset = 0;
+    let animatingAuto = false;
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function selectMolecule(key, btnElement) {
+        currentKey = key;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+        updateUI();
+    }
+
+    function setViewMode(mode) {
+        viewMode = mode;
+        document.getElementById('modeBohr').classList.toggle('active', mode === 'bohr');
+        document.getElementById('modeOrbital').classList.toggle('active', mode === 'orbital');
+        document.getElementById('orbitalLegend').style.display = mode === 'orbital' ? 'flex' : 'none';
+    }
+
+    function updateProgress(val) {
+        progress = val / 100;
+        animatingAuto = false;
+        updateUI();
+    }
+
+    function toggleAutoBond() {
+        animatingAuto = true;
+        const target = progress < 0.9 ? 1 : 0;
+        const step = target === 1 ? 0.015 : -0.02;
+
+        function stepAnim() {
+            if (!animatingAuto) return;
+            progress += step;
+            if ((step > 0 && progress >= 1) || (step < 0 && progress <= 0)) {
+                progress = Math.max(0, Math.min(1, progress));
+                animatingAuto = false;
+            }
+            slider.value = Math.round(progress * 100);
+            updateUI();
+            if (animatingAuto) requestAnimationFrame(stepAnim);
+        }
+        stepAnim();
+    }
+
+    function updateUI() {
+        const mol = molecules[currentKey];
+        document.getElementById('infoType').textContent = mol.bondType;
+        document.getElementById('infoPairs').textContent = mol.pairsText;
+        document.getElementById('infoLength').textContent = mol.bondLength;
+        document.getElementById('infoEnergy').textContent = mol.bondEnergy;
+
+        const statusBadge = document.getElementById('statusBadge');
+        const lewisBadge = document.getElementById('lewisBadge');
+        const autoBtn = document.getElementById('autoBtn');
+
+        if (progress > 0.85) {
+            statusBadge.textContent = `جزيء ${mol.name} مستقر (اكتملت مستويات التكافؤ)`;
+            statusBadge.style.borderColor = '#10b981';
+            statusBadge.style.color = '#34d399';
+            lewisBadge.textContent = mol.lewisBonded;
+            autoBtn.textContent = 'فصل الذرات';
+            autoBtn.style.background = '#ef4444';
+        } else {
+            statusBadge.textContent = `ذرات منفصلة (غير مستقرة طاقياً)`;
+            statusBadge.style.borderColor = '#f59e0b';
+            statusBadge.style.color = '#fbbf24';
+            lewisBadge.textContent = mol.lewisSeparated;
+            autoBtn.textContent = 'دمج الذرات تلقائياً';
+            autoBtn.style.background = '#10b981';
+        }
+    }
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function drawNucleus(x, y, symbol, color, radius = 24) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.fillStyle = '#090d16';
+        ctx.font = `bold ${radius * 0.8}px Segoe UI`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(symbol, x, y);
+        ctx.restore();
+    }
+
+    function drawElectron(x, y, color, isShared = false) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, isShared ? 7.5 : 5.8, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isShared ? 14 : 6;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.3;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawLobe(x, y, angle, length, width, color, alpha = 0.35) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.ellipse(length / 2, 0, length / 2, width / 2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = alpha;
+        ctx.fill();
+        ctx.globalAlpha = Math.min(1, alpha + 0.3);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    function drawOrbitalBondBetween(x1, y1, x2, y2, order) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const angle = Math.atan2(dy, dx);
+        const dist = Math.hypot(dx, dy);
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+
+        ctx.save();
+        ctx.translate(mx, my);
+        ctx.rotate(angle);
+
+        const lobeLen = Math.max(45, dist * 0.48);
+        drawLobe(-dist / 2, 0, 0, lobeLen, 36, '#10b981', 0.35);
+        drawLobe(dist / 2, 0, Math.PI, lobeLen, 36, '#10b981', 0.35);
+
+        if (progress > 0.7) {
+            const sAlpha = (progress - 0.7) / 0.3;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, dist * 0.36, 22, 0, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(16, 185, 129, ${sAlpha * 0.55})`;
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 15px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText('σ', 0, 5);
+        }
+
+        if (order >= 2) {
+            const pHeight = 72;
+            [-dist / 2, dist / 2].forEach(posX => {
+                drawLobe(posX, 0, -Math.PI / 2, pHeight, 26, '#ec4899', 0.32);
+                drawLobe(posX, 0, Math.PI / 2, pHeight, 26, '#ec4899', 0.32);
+            });
+
+            if (progress > 0.7) {
+                const pAlpha = (progress - 0.7) / 0.3;
+                [-52, 52].forEach(bridgeY => {
+                    ctx.beginPath();
+                    ctx.ellipse(0, bridgeY, dist * 0.52, 16, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(236, 72, 153, ${pAlpha * 0.55})`;
+                    ctx.fill();
+                    ctx.strokeStyle = `rgba(244, 114, 182, ${pAlpha * 0.85})`;
+                    ctx.setLineDash([4, 3]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 13px Segoe UI';
+                    ctx.fillText('π₁', 0, bridgeY + 4);
+                });
+            }
+        }
+
+        if (order >= 3) {
+            const p2Height = 65;
+            const tilt = 0.42;
+            [-dist / 2, dist / 2].forEach(posX => {
+                drawLobe(posX, 0, -Math.PI / 2 + tilt, p2Height, 22, '#a855f7', 0.32);
+                drawLobe(posX, 0, Math.PI / 2 + tilt, p2Height, 22, '#a855f7', 0.32);
+            });
+
+            if (progress > 0.7) {
+                const pAlpha = (progress - 0.7) / 0.3;
+                [-32, 32].forEach((bridgeY, idx) => {
+                    const shiftX = idx === 0 ? 15 : -15;
+                    ctx.beginPath();
+                    ctx.ellipse(shiftX, bridgeY, dist * 0.48, 13, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(168, 85, 247, ${pAlpha * 0.55})`;
+                    ctx.fill();
+                    ctx.fillStyle = '#e9d5ff';
+                    ctx.font = 'bold 12px Segoe UI';
+                    ctx.fillText('π₂', shiftX, bridgeY + 4);
+                });
+            }
+        }
+
+        ctx.restore();
+    }
+
+    function renderDiatomic(mol, cx, cy) {
+        const shellR = 90;
+        const curDist = lerp(270, mol.targetDist, progress);
+        const x1 = cx - curDist / 2;
+        const x2 = cx + curDist / 2;
+
+        if (viewMode === 'orbital') {
+            drawOrbitalBondBetween(x1, cy, x2, cy, mol.sharedPairs);
+            drawNucleus(x1, cy, mol.symbol, mol.color);
+            drawNucleus(x2, cy, mol.symbol, mol.color);
+            return;
+        }
+
+        [x1, x2].forEach(ax => {
+            ctx.beginPath();
+            ctx.arc(ax, cy, shellR, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            drawNucleus(ax, cy, mol.symbol, mol.color);
+        });
+
+        const leftAngles = [Math.PI, Math.PI * 0.55, Math.PI * 1.45];
+        const rightAngles = [0, Math.PI * 0.45, Math.PI * 1.55];
+        for (let p = 0; p < mol.lonePairsPerAtom; p++) {
+            const sp = 0.14;
+            const bL = leftAngles[p] + Math.sin(angleOffset * 2 + p) * 0.025;
+            drawElectron(x1 + Math.cos(bL - sp) * shellR, cy + Math.sin(bL - sp) * shellR, '#38bdf8');
+            drawElectron(x1 + Math.cos(bL + sp) * shellR, cy + Math.sin(bL + sp) * shellR, '#38bdf8');
+
+            const bR = rightAngles[p] - Math.sin(angleOffset * 2 + p) * 0.025;
+            drawElectron(x2 + Math.cos(bR - sp) * shellR, cy + Math.sin(bR - sp) * shellR, '#f43f5e');
+            drawElectron(x2 + Math.cos(bR + sp) * shellR, cy + Math.sin(bR + sp) * shellR, '#f43f5e');
+        }
+
+        const vSpace = 24;
+        const startY = cy - ((mol.sharedPairs - 1) * vSpace) / 2;
+        for (let s = 0; s < mol.sharedPairs; s++) {
+            const uAngleL = (s - (mol.sharedPairs - 1) / 2) * 0.35;
+            const uAngleR = Math.PI - uAngleL;
+            const bY = startY + s * vSpace + Math.sin(angleOffset * 3 + s) * 2;
+
+            const curXL = lerp(x1 + Math.cos(uAngleL) * shellR, cx - 10, progress);
+            const curYL = lerp(cy + Math.sin(uAngleL) * shellR, bY, progress);
+            const curXR = lerp(x2 + Math.cos(uAngleR) * shellR, cx + 10, progress);
+            const curYR = lerp(cy + Math.sin(uAngleR) * shellR, bY, progress);
+
+            const bonded = progress > 0.82;
+            drawElectron(curXL, curYL, bonded ? '#facc15' : '#38bdf8', bonded);
+            drawElectron(curXR, curYR, bonded ? '#facc15' : '#f43f5e', bonded);
+        }
+    }
+
+    function renderH2O(cx, cy) {
+        const ox = cx;
+        const oy = cy - 15;
+        const shellO = 85;
+        const shellH = 52;
+
+        const bondAngleRad = (52.25 * Math.PI) / 180;
+        const distOH = lerp(210, 102, progress);
+
+        const h1x = ox - Math.sin(bondAngleRad) * distOH;
+        const h1y = oy + Math.cos(bondAngleRad) * distOH;
+        const h2x = ox + Math.sin(bondAngleRad) * distOH;
+        const h2y = oy + Math.cos(bondAngleRad) * distOH;
+
+        if (viewMode === 'orbital') {
+            drawOrbitalBondBetween(ox, oy, h1x, h1y, 1);
+            drawOrbitalBondBetween(ox, oy, h2x, h2y, 1);
+            drawLobe(ox, oy, -Math.PI / 2 - 0.45, 65, 32, '#38bdf8', 0.25);
+            drawLobe(ox, oy, -Math.PI / 2 + 0.45, 65, 32, '#38bdf8', 0.25);
+            drawNucleus(ox, oy, 'O', '#38bdf8', 25);
+            drawNucleus(h1x, h1y, 'H', '#cbd5e1', 18);
+            drawNucleus(h2x, h2y, 'H', '#cbd5e1', 18);
+            return;
+        }
+
+        ctx.beginPath(); ctx.arc(ox, oy, shellO, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)'; ctx.lineWidth = 2; ctx.stroke();
+
+        [ [h1x, h1y], [h2x, h2y] ].forEach(([hx, hy]) => {
+            ctx.beginPath(); ctx.arc(hx, hy, shellH, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)'; ctx.stroke();
+            drawNucleus(hx, hy, 'H', '#cbd5e1', 18);
+        });
+        drawNucleus(ox, oy, 'O', '#38bdf8', 25);
+
+        [-Math.PI * 0.68, -Math.PI * 0.32].forEach(ang => {
+            drawElectron(ox + Math.cos(ang - 0.12) * shellO, oy + Math.sin(ang - 0.12) * shellO, '#38bdf8');
+            drawElectron(ox + Math.cos(ang + 0.12) * shellO, oy + Math.sin(ang + 0.12) * shellO, '#38bdf8');
+        });
+
+        const bonded = progress > 0.82;
+        [ [h1x, h1y, Math.PI - bondAngleRad], [h2x, h2y, bondAngleRad] ].forEach(([hx, hy]) => {
+            const dirX = (hx - ox) / distOH;
+            const dirY = (hy - oy) / distOH;
+            const midX = ox + dirX * (shellO * 0.72);
+            const midY = oy + dirY * (shellO * 0.72);
+
+            const eOx = lerp(ox + dirX * shellO, midX - dirY * 8, progress);
+            const eOy = lerp(oy + dirY * shellO, midY + dirX * 8, progress);
+            const eHx = lerp(hx - dirX * shellH, midX + dirY * 8, progress);
+            const eHy = lerp(hy - dirY * shellH, midY - dirX * 8, progress);
+
+            drawElectron(eOx, eOy, bonded ? '#facc15' : '#38bdf8', bonded);
+            drawElectron(eHx, eHy, bonded ? '#facc15' : '#f43f5e', bonded);
+        });
+    }
+
+    function renderCO2(cx, cy) {
+        const shellR = 76;
+        const distCO = lerp(225, 118, progress);
+        const oxL = cx - distCO;
+        const oxR = cx + distCO;
+
+        if (viewMode === 'orbital') {
+            drawOrbitalBondBetween(oxL, cy, cx, cy, 2);
+            drawOrbitalBondBetween(cx, cy, oxR, cy, 2);
+            drawNucleus(cx, cy, 'C', '#f59e0b', 24);
+            drawNucleus(oxL, cy, 'O', '#38bdf8', 24);
+            drawNucleus(oxR, cy, 'O', '#38bdf8', 24);
+            return;
+        }
+
+        [ [oxL, 'O', '#38bdf8'], [cx, 'C', '#f59e0b'], [oxR, 'O', '#38bdf8'] ].forEach(([ax, sym, col]) => {
+            ctx.beginPath(); ctx.arc(ax, cy, shellR, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)'; ctx.lineWidth = 2; ctx.stroke();
+            drawNucleus(ax, cy, sym, col, 24);
+        });
+
+        [Math.PI * 0.65, Math.PI * 1.35].forEach(ang => {
+            drawElectron(oxL + Math.cos(ang - 0.13) * shellR, cy + Math.sin(ang - 0.13) * shellR, '#38bdf8');
+            drawElectron(oxL + Math.cos(ang + 0.13) * shellR, cy + Math.sin(ang + 0.13) * shellR, '#38bdf8');
+        });
+        [Math.PI * 0.35, -Math.PI * 0.35].forEach(ang => {
+            drawElectron(oxR + Math.cos(ang - 0.13) * shellR, cy + Math.sin(ang - 0.13) * shellR, '#38bdf8');
+            drawElectron(oxR + Math.cos(ang + 0.13) * shellR, cy + Math.sin(ang + 0.13) * shellR, '#38bdf8');
+        });
+
+        const bonded = progress > 0.82;
+        [-14, 14].forEach(offsetY => {
+            const midL = (oxL + cx) / 2;
+            drawElectron(lerp(oxL + shellR, midL - 8, progress), cy + offsetY, bonded ? '#facc15' : '#38bdf8', bonded);
+            drawElectron(lerp(cx - shellR, midL + 8, progress), cy + offsetY, bonded ? '#facc15' : '#f59e0b', bonded);
+
+            const midR = (cx + oxR) / 2;
+            drawElectron(lerp(cx + shellR, midR - 8, progress), cy + offsetY, bonded ? '#facc15' : '#f59e0b', bonded);
+            drawElectron(lerp(oxR - shellR, midR + 8, progress), cy + offsetY, bonded ? '#facc15' : '#38bdf8', bonded);
+        });
+    }
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        angleOffset += 0.015;
+        const mol = molecules[currentKey];
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 + 5;
+
+        if (mol.kind === 'diatomic') {
+            renderDiatomic(mol
