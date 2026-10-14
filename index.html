@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" translate="no">
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>المختبر التفاعلي: الروابط التساهمية وتداخل الأفلاك</title>
     <style>
@@ -12,13 +13,13 @@
             --text-muted: #94a3b8;
             --accent: #38bdf8;
         }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; user-select: none; -webkit-user-select: none; }
         body {
             margin: 0; padding: 15px;
             background-color: var(--bg-dark); color: var(--text-main);
             display: flex; flex-direction: column; align-items: center;
         }
-        h1 { margin: 5px 0 12px; font-size: 1.65rem; color: var(--accent); text-align: center; }
+        h1 { margin: 5px 0 12px; font-size: 1.5rem; color: var(--accent); text-align: center; }
         .container {
             width: 100%; max-width: 1020px;
             background: var(--card-bg); border-radius: 16px;
@@ -28,22 +29,18 @@
             display: flex; justify-content: space-between; align-items: center;
             gap: 12px; margin-bottom: 15px; flex-wrap: wrap;
         }
-        .tabs {
-            display: flex; gap: 8px; flex-wrap: wrap; flex: 1;
-        }
+        .tabs { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
         .tab-btn {
-            flex: 1; min-width: 135px; padding: 10px 12px;
+            flex: 1; min-width: 130px; padding: 10px 12px;
             background: #334155; color: var(--text-main);
             border: 2px solid transparent; border-radius: 10px;
             font-size: 0.95rem; font-weight: bold; cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s; touch-action: manipulation;
         }
         .tab-btn.active {
             background: #0284c7; border-color: var(--accent);
             box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
         }
-        .tab-btn:hover:not(.active) { background: #475569; }
-
         .mode-toggle {
             display: flex; background: #0f172a; padding: 5px;
             border-radius: 10px; border: 1px solid #334155;
@@ -51,90 +48,84 @@
         .mode-btn {
             padding: 8px 14px; border: none; background: transparent;
             color: var(--text-muted); font-weight: bold; font-size: 0.9rem;
-            border-radius: 7px; cursor: pointer; transition: 0.2s;
+            border-radius: 7px; cursor: pointer; transition: 0.2s; touch-action: manipulation;
         }
         .mode-btn.active {
             background: #6366f1; color: #fff;
             box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
         }
-
         .canvas-wrapper {
-            position: relative; width: 100%; height: 420px;
+            position: relative; width: 100%; height: 400px;
             background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
             border-radius: 12px; border: 1px solid #334155; overflow: hidden;
             margin-bottom: 15px;
         }
         canvas { width: 100%; height: 100%; display: block; }
-
         .status-badge {
             position: absolute; top: 12px; right: 12px;
-            padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.88rem;
-            background: rgba(15, 23, 42, 0.88); border: 1px solid #475569; z-index: 2;
+            padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 0.85rem;
+            background: rgba(15, 23, 42, 0.88); border: 1px solid #475569; z-index: 2; pointer-events: none;
         }
         .lewis-badge {
             position: absolute; top: 12px; left: 12px;
-            padding: 6px 15px; border-radius: 10px; font-weight: bold; font-size: 1.2rem;
+            padding: 6px 15px; border-radius: 10px; font-weight: bold; font-size: 1.15rem;
             background: rgba(15, 23, 42, 0.88); color: var(--accent); border: 1px solid #475569;
-            letter-spacing: 1.5px; direction: ltr; z-index: 2;
+            letter-spacing: 1.5px; direction: ltr; z-index: 2; pointer-events: none;
         }
         .orbital-legend {
             position: absolute; bottom: 12px; right: 12px;
             display: none; gap: 14px; background: rgba(15, 23, 42, 0.9);
-            padding: 8px 15px; border-radius: 8px; border: 1px solid #334155; font-size: 0.85rem;
+            padding: 8px 15px; border-radius: 8px; border: 1px solid #334155; font-size: 0.8rem;
+            flex-wrap: wrap; z-index: 2; pointer-events: none;
         }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-
         .controls {
             display: flex; align-items: center; gap: 15px;
             background: #0f172a; padding: 12px 18px; border-radius: 12px;
             margin-bottom: 15px; flex-wrap: wrap;
         }
-        .slider-group { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 250px; }
-        input[type="range"] { flex: 1; accent-color: var(--accent); height: 8px; cursor: pointer; }
+        .slider-group { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 240px; }
+        input[type="range"] { flex: 1; accent-color: var(--accent); height: 10px; cursor: pointer; }
         .action-btn {
-            padding: 9px 18px; background: #10b981; color: white;
+            padding: 10px 20px; background: #10b981; color: white;
             border: none; border-radius: 8px; font-weight: bold;
-            font-size: 0.95rem; cursor: pointer; transition: 0.2s;
+            font-size: 0.95rem; cursor: pointer; touch-action: manipulation;
         }
-        .action-btn:hover { opacity: 0.9; }
-
         .info-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 10px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
         }
         .info-card {
             background: #0f172a; padding: 12px; border-radius: 10px;
             border-right: 4px solid var(--accent); text-align: center;
         }
         .info-card .label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
-        .info-card .value { font-size: 1.05rem; font-weight: bold; color: #fff; }
-
+        .info-card .value { font-size: 1rem; font-weight: bold; color: #fff; }
         footer {
             margin-top: 18px; padding: 10px 24px;
             background: rgba(30, 41, 59, 0.75); border-radius: 30px;
             border: 1px solid #334155; color: #cbd5e1;
             font-size: 0.95rem; text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         footer strong { color: var(--accent); }
     </style>
 </head>
-<body>
+<body class="notranslate">
 
     <h1>المختبر التفاعلي: الروابط التساهمية وتداخل الأفلاك (σ و π)</h1>
 
     <div class="container">
         <div class="top-bar">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="selectMolecule('F2', this)">الفلور F₂ (أحادية)</button>
-                <button class="tab-btn" onclick="selectMolecule('O2', this)">الأكسجين O₂ (ثنائية)</button>
-                <button class="tab-btn" onclick="selectMolecule('N2', this)">النيتروجين N₂ (ثلاثية)</button>
-                <button class="tab-btn" onclick="selectMolecule('H2O', this)">الماء H₂O (قطبية)</button>
-                <button class="tab-btn" onclick="selectMolecule('CO2', this)">ثاني أكسيد الكربون CO₂</button>
+            <div class="tabs" id="moleculeTabs">
+                <button type="button" class="tab-btn active" data-mol="F2">الفلور F₂ (أحادية)</button>
+                <button type="button" class="tab-btn" data-mol="O2">الأكسجين O₂ (ثنائية)</button>
+                <button type="button" class="tab-btn" data-mol="N2">النيتروجين N₂ (ثلاثية)</button>
+                <button type="button" class="tab-btn" data-mol="H2O">الماء H₂O (قطبية)</button>
+                <button type="button" class="tab-btn" data-mol="CO2">ثاني أكسيد الكربون CO₂</button>
             </div>
             <div class="mode-toggle">
-                <button class="mode-btn active" id="modeBohr" onclick="setViewMode('bohr')">مدارات التكافؤ (لويس)</button>
-                <button class="mode-btn" id="modeOrbital" onclick="setViewMode('orbital')">تداخل الأفلاك (σ و π)</button>
+                <button type="button" class="mode-btn active" id="modeBohr">مدارات التكافؤ (لويس)</button>
+                <button type="button" class="mode-btn" id="modeOrbital">تداخل الأفلاك (σ و π)</button>
             </div>
         </div>
 
@@ -142,9 +133,9 @@
             <div id="statusBadge" class="status-badge">ذرات منفصلة</div>
             <div id="lewisBadge" class="lewis-badge">:F· + ·F:</div>
             <div id="orbitalLegend" class="orbital-legend">
-                <div class="legend-item"><span class="dot" style="background:#10b981"></span> تداخل رأسي: رابطة سيجما (σ)</div>
-                <div class="legend-item"><span class="dot" style="background:#ec4899"></span> تداخل جانبي علوي/سفلي: رابطة باي الأولى (π₁)</div>
-                <div class="legend-item"><span class="dot" style="background:#a855f7"></span> تداخل جانبي أمامي/خلفي: رابطة باي الثانية (π₂)</div>
+                <div class="legend-item"><span class="dot" style="background:#10b981"></span> تداخل رأسي: سيجما (σ)</div>
+                <div class="legend-item"><span class="dot" style="background:#ec4899"></span> تداخل جانبي: باي الأولى (π₁)</div>
+                <div class="legend-item"><span class="dot" style="background:#a855f7"></span> تداخل جانبي: باي الثانية (π₂)</div>
             </div>
             <canvas id="simCanvas"></canvas>
         </div>
@@ -152,10 +143,10 @@
         <div class="controls">
             <div class="slider-group">
                 <span>ذرات منفصلة</span>
-                <input type="range" id="bondSlider" min="0" max="100" value="0" oninput="updateProgress(this.value)">
+                <input type="range" id="bondSlider" min="0" max="100" value="0">
                 <span>تكوين الجزيء</span>
             </div>
-            <button class="action-btn" id="autoBtn" onclick="toggleAutoBond()">دمج الذرات تلقائياً</button>
+            <button type="button" class="action-btn" id="autoBtn">دمج الذرات تلقائياً</button>
         </div>
 
         <div class="info-grid">
@@ -183,9 +174,14 @@
     </footer>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
     const slider = document.getElementById('bondSlider');
+    const autoBtn = document.getElementById('autoBtn');
+    const modeBohrBtn = document.getElementById('modeBohr');
+    const modeOrbitalBtn = document.getElementById('modeOrbital');
+    const tabButtons = document.querySelectorAll('.tab-btn');
 
     const molecules = {
         F2: {
@@ -240,36 +236,49 @@
     let animatingAuto = false;
 
     function resizeCanvas() {
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
+        canvas.width = canvas.parentElement.clientWidth || 800;
+        canvas.height = canvas.parentElement.clientHeight || 400;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function selectMolecule(key, btnElement) {
-        currentKey = key;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
-        updateUI();
-    }
+    // ربط أزرار الجزيئات
+    tabButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentKey = this.getAttribute('data-mol');
+            tabButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            updateUI();
+        });
+    });
 
-    function setViewMode(mode) {
-        viewMode = mode;
-        document.getElementById('modeBohr').classList.toggle('active', mode === 'bohr');
-        document.getElementById('modeOrbital').classList.toggle('active', mode === 'orbital');
-        document.getElementById('orbitalLegend').style.display = mode === 'orbital' ? 'flex' : 'none';
-    }
+    // ربط أزرار نمط العرض
+    modeBohrBtn.addEventListener('click', function() {
+        viewMode = 'bohr';
+        modeBohrBtn.classList.add('active');
+        modeOrbitalBtn.classList.remove('active');
+        document.getElementById('orbitalLegend').style.display = 'none';
+    });
 
-    function updateProgress(val) {
-        progress = val / 100;
+    modeOrbitalBtn.addEventListener('click', function() {
+        viewMode = 'orbital';
+        modeOrbitalBtn.classList.add('active');
+        modeBohrBtn.classList.remove('active');
+        document.getElementById('orbitalLegend').style.display = 'flex';
+    });
+
+    // ربط شريط التمرير
+    slider.addEventListener('input', function() {
+        progress = Number(this.value) / 100;
         animatingAuto = false;
         updateUI();
-    }
+    });
 
-    function toggleAutoBond() {
+    // ربط زر الدمج التلقائي
+    autoBtn.addEventListener('click', function() {
         animatingAuto = true;
         const target = progress < 0.9 ? 1 : 0;
-        const step = target === 1 ? 0.015 : -0.02;
+        const step = target === 1 ? 0.018 : -0.022;
 
         function stepAnim() {
             if (!animatingAuto) return;
@@ -283,7 +292,7 @@
             if (animatingAuto) requestAnimationFrame(stepAnim);
         }
         stepAnim();
-    }
+    });
 
     function updateUI() {
         const mol = molecules[currentKey];
@@ -294,7 +303,6 @@
 
         const statusBadge = document.getElementById('statusBadge');
         const lewisBadge = document.getElementById('lewisBadge');
-        const autoBtn = document.getElementById('autoBtn');
 
         if (progress > 0.85) {
             statusBadge.textContent = `جزيء ${mol.name} مستقر (اكتملت مستويات التكافؤ)`;
@@ -442,7 +450,7 @@
 
     function renderDiatomic(mol, cx, cy) {
         const shellR = 90;
-        const curDist = lerp(270, mol.targetDist, progress);
+        const curDist = lerp(260, mol.targetDist, progress);
         const x1 = cx - curDist / 2;
         const x2 = cx + curDist / 2;
 
@@ -500,7 +508,7 @@
         const shellH = 52;
 
         const bondAngleRad = (52.25 * Math.PI) / 180;
-        const distOH = lerp(210, 102, progress);
+        const distOH = lerp(200, 102, progress);
 
         const h1x = ox - Math.sin(bondAngleRad) * distOH;
         const h1y = oy + Math.cos(bondAngleRad) * distOH;
@@ -534,7 +542,7 @@
         });
 
         const bonded = progress > 0.82;
-        [ [h1x, h1y, Math.PI - bondAngleRad], [h2x, h2y, bondAngleRad] ].forEach(([hx, hy]) => {
+        [ [h1x, h1y], [h2x, h2y] ].forEach(([hx, hy]) => {
             const dirX = (hx - ox) / distOH;
             const dirY = (hy - oy) / distOH;
             const midX = ox + dirX * (shellO * 0.72);
@@ -552,7 +560,7 @@
 
     function renderCO2(cx, cy) {
         const shellR = 76;
-        const distCO = lerp(225, 118, progress);
+        const distCO = lerp(215, 118, progress);
         const oxL = cx - distCO;
         const oxR = cx + distCO;
 
@@ -600,4 +608,19 @@
         const cy = canvas.height / 2 + 5;
 
         if (mol.kind === 'diatomic') {
-            renderDiatomic(mol
+            renderDiatomic(mol, cx, cy);
+        } else if (currentKey === 'H2O') {
+            renderH2O(cx, cy);
+        } else if (currentKey === 'CO2') {
+            renderCO2(cx, cy);
+        }
+
+        requestAnimationFrame(render);
+    }
+
+    updateUI();
+    render();
+});
+</script>
+</body>
+</html>
